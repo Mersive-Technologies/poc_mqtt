@@ -10,9 +10,13 @@ fun main(args: Array<String>) {
     println("Hello World!")
 
     val publisherId = UUID.randomUUID().toString()
-    val publisher = MqttClient("tcp://127.0.0.1:1883", publisherId, MqttDefaultFilePersistence("/tmp"))
+    val publisher = MqttAsyncClient("tcp://127.0.0.1:1883", publisherId, MqttDefaultFilePersistence("/tmp"))
+    val options = MqttConnectOptions()
+    options.isAutomaticReconnect = true
+    options.isCleanSession = true
+    options.connectionTimeout = 10
 
-    val mPublishCallback: MqttCallback = object : MqttCallback {
+    val msgCallback: MqttCallback = object : MqttCallback {
         override fun connectionLost(cause: Throwable?) {
             println("connectionLost")
         }
@@ -26,13 +30,15 @@ fun main(args: Array<String>) {
         }
     }
 
-    val options = MqttConnectOptions()
-    options.isAutomaticReconnect = true
-    options.isCleanSession = true
-    options.connectionTimeout = 10
-    publisher.setCallback(mPublishCallback)
-    publisher.timeToWait = 1000
-    publisher.connect(options)
+    val mPublishCallback = object : IMqttActionListener {
+        override fun onSuccess(publishToken: IMqttToken) {
+            println("onSuccess")
+        }
+
+        override fun onFailure(publishToken: IMqttToken, ex: Throwable) {
+            println("onFailure")
+        }
+    }
 
     val TOPIC = "temps"
 
@@ -40,9 +46,9 @@ fun main(args: Array<String>) {
     val receivedSignal = CountDownLatch(10)
     for(i in (0..1)) {
         val subscriberId = UUID.randomUUID().toString()
-        val subscriber = MqttClient("tcp://127.0.0.1:1883", subscriberId, MqttDefaultFilePersistence("/tmp"))
-        subscriber.connect(options)
-        subscriber.subscribe(TOPIC) { topic, msg ->
+        val subscriber = MqttAsyncClient("tcp://127.0.0.1:1883", subscriberId, MqttDefaultFilePersistence("/tmp"))
+        subscriber.connect(options).waitForCompletion()
+        subscriber.subscribe(TOPIC, 2) { topic, msg ->
             val payload: ByteArray = msg.getPayload()
             println( "[I82] Message received: topic=${topic}, payload=${String(payload)}")
             receivedSignal.countDown()
@@ -50,13 +56,15 @@ fun main(args: Array<String>) {
     }
 
     // publish
+    publisher.setCallback(msgCallback)
+    publisher.connect(options).waitForCompletion()
     val temp: Double = 80 + nextDouble() * 20.0
     val payload = String.format("T:%04.2f", temp).toByteArray()
     val msg = MqttMessage(payload)
-    msg.setQos(1);
+    msg.setQos(2);
     msg.setRetained(false); // do not queue, stale data is bad
     val databaseId: Long = 42
-    publisher.publish(TOPIC, msg);
+    publisher.publish(TOPIC, msg, null, mPublishCallback)
 
     receivedSignal.await(1, TimeUnit.MINUTES)
 }

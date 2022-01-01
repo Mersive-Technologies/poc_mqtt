@@ -15,8 +15,8 @@ repositories {
 dependencies {
     testImplementation(kotlin("test"))
 
-    implementation("org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5")
-    // implementation("org.eclipse.paho:org.eclipse.paho.mqttv5.client:1.2.5")
+//    implementation("org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5")
+    implementation("org.eclipse.paho:org.eclipse.paho.mqttv5.client:1.2.5")
 }
 
 tasks.test {

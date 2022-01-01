@@ -24,3 +24,9 @@ git clone <repo>
 7. MQTT 5 gives us "clean start" which makes sure there are no stale messages
 
 Summary of summary: one can disable queueing in MQTT, making sure we don't have stale data, but it can't ensure exactly once delivery
+
+MQTT 5 also gives us [Request/Resopnse](https://stackoverflow.com/questions/59888811/request-response-pattern-with-mosca-mqtt/59916330#59916330), however:
+
+```text
+Even with MQTT v5 you would need to implement the idle timeout bit yourself.
+```

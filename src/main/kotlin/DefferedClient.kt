@@ -20,12 +20,12 @@ class DefferedClient(
         client.setCallback(this)
     }
 
-    fun connect(): DeferredToken {
+    fun connect() {
         val options = MqttConnectionOptions()
         options.isAutomaticReconnect = true
         options.isCleanStart = true
         options.connectionTimeout = 10
-        return DeferredToken(client.connect(options))
+        client.connect(options).waitForCompletion()
     }
 
     fun publish(topic: String, message: MqttMessage, context: Any?): DeferredAction {
@@ -34,8 +34,8 @@ class DefferedClient(
         return listener
     }
 
-    fun subscribe(topic: String, qos: Int): DeferredToken {
-        return DeferredToken(client.subscribe(topic, qos))
+    fun subscribe(topic: String, qos: Int) {
+        client.subscribe(topic, qos).waitForCompletion()
     }
 
     override fun disconnected(disconnectResponse: MqttDisconnectResponse?) {

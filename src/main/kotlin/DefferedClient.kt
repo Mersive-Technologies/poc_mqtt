@@ -20,7 +20,7 @@ class DefferedClient(
         client.setCallback(this)
     }
 
-    suspend fun connect(): DeferredToken {
+    fun connect(): DeferredToken {
         val options = MqttConnectionOptions()
         options.isAutomaticReconnect = true
         options.isCleanStart = true

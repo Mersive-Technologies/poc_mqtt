@@ -12,7 +12,9 @@ fun main() {
 
     runBlocking {
         val publisher = DefferedClient("tcp://127.0.0.1:1883", this)
-        publisher.connect()
+        println("Publisher connecting...")
+        publisher.connect().await()
+        println("Publisher connected!")
         val subscribers = (0..1).map { DefferedClient("tcp://127.0.0.1:1883", this) }
         subscribers.map {
             async {
@@ -20,6 +22,7 @@ fun main() {
                 it.subscribe(TOPIC, 0).await()
             }
         }.awaitAll()
+        println("Subscribers connected!")
         val listeners = subscribers.map {
             async {
                 for(item in it.incoming) {

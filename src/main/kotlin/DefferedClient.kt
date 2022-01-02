@@ -1,6 +1,5 @@
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import org.eclipse.paho.mqttv5.client.*
 import org.eclipse.paho.mqttv5.client.persist.MqttDefaultFilePersistence
@@ -10,7 +9,7 @@ import org.eclipse.paho.mqttv5.common.packet.MqttProperties
 import java.util.*
 
 class DefferedClient(
-    val url: String,
+    url: String,
     val scope: CoroutineScope
 ) : MqttCallback {
     val publisherId = UUID.randomUUID().toString()
@@ -21,18 +20,22 @@ class DefferedClient(
         client.setCallback(this)
     }
 
-    suspend fun connect() {
+    suspend fun connect(): DeferredToken {
         val options = MqttConnectionOptions()
         options.isAutomaticReconnect = true
         options.isCleanStart = true
         options.connectionTimeout = 10
-        client.connect(options).waitForCompletion()
+        return DeferredToken(client.connect(options))
     }
 
     fun publish(topic: String, message: MqttMessage, context: Any?): DeferredAction {
         val listener = DeferredAction()
         client.publish(topic, message, context, listener)
         return listener
+    }
+
+    fun subscribe(topic: String, qos: Int): DeferredToken {
+        return DeferredToken(client.subscribe(topic, qos))
     }
 
     override fun disconnected(disconnectResponse: MqttDisconnectResponse?) {

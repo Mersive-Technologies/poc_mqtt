@@ -8,12 +8,18 @@ import org.eclipse.paho.mqttv5.common.packet.MqttProperties
 
 fun main() {
     println("Hello World!")
+    val TOPIC = "temps"
 
     runBlocking {
         val publisher = DefferedClient("tcp://127.0.0.1:1883", this)
         publisher.connect()
         val subscribers = (0..1).map { DefferedClient("tcp://127.0.0.1:1883", this) }
-        subscribers.forEach { it.connect() }
+        subscribers.map {
+            async {
+                it.connect().await()
+                it.subscribe(TOPIC, 0).await()
+            }
+        }.awaitAll()
         val listeners = subscribers.map {
             async {
                 for(item in it.incoming) {
@@ -24,7 +30,6 @@ fun main() {
         }
 
         // publish
-        val TOPIC = "temps"
         val payload = "op1".toByteArray()
         val msg = MqttMessage(payload)
         msg.qos = 0;

@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.5.31"
+    kotlin("jvm") version "1.6.0"
     application
 }
 
@@ -15,8 +15,10 @@ repositories {
 dependencies {
     testImplementation(kotlin("test"))
 
-//    implementation("org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5")
     implementation("org.eclipse.paho:org.eclipse.paho.mqttv5.client:1.2.5")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.6.0")
+    implementation("io.ktor:ktor-utils-jvm:1.6.0")
 }
 
 tasks.test {

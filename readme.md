@@ -1,4 +1,4 @@
-# Eclipse Paho MQTT client PoC
+# Eclipse Paho MQTT client PoC *Public Repo*
 
 The commit history in this repo shows various "tests" demonstrating how MQTT delivery modes work.
 

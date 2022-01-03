@@ -13,7 +13,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeoutException
 
-class DefferedClient(
+class DeferredClient(
     url: String,
     val scope: CoroutineScope
 ) : MqttCallback {
@@ -68,7 +68,7 @@ class DefferedClient(
     suspend fun request(topic: String, payload: String): String? {
         val uuid = UUID.randomUUID().toString()
         val msg = MqttMessage(payload.toByteArray())
-        msg.qos = 0;
+        msg.qos = 1;
         msg.properties = MqttProperties()
         msg.properties.messageExpiryInterval = 1
         msg.isRetained = false; // do not queue, stale data is bad
@@ -77,7 +77,8 @@ class DefferedClient(
 
         val cofu = CompletableFuture<String>()
         requests[uuid] = cofu
-        client.publish(topic, msg)
+        val token = DeferredToken(client.publish(topic, msg)).await()
+        println("Token=$token")
         scope.launch {
             delay(3000)
             requests.remove(uuid)?.completeExceptionally(TimeoutException("Request ${uuid} did not complete"))

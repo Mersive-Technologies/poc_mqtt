@@ -7,11 +7,11 @@ fun main() {
     val reqTopic = "temps"
 
     runBlocking {
-        val publisher = DefferedClient("tcp://127.0.0.1:1883", this)
+        val publisher = DeferredClient("tcp://127.0.0.1:1883", this)
         println("Publisher connecting...")
         publisher.connect()
         println("Publisher connected!")
-        val subscribers = (0..1).map { DefferedClient("tcp://127.0.0.1:1883", this) }
+        val subscribers = (0..2).map { DeferredClient("tcp://127.0.0.1:1883", this) }
         subscribers.forEach {
             it.connect()
             it.subscribe(reqTopic, 0)
